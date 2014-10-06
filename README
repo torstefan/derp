@@ -1,0 +1,3 @@
+This is the repo of DERP Engineering and our Arduino based brewhelper system to help DERP Brewery gather telemetry data such as high resolution temperature readings!
+
+The code is Beerware licensed. If you are reading this README you are welcome to do what you want with code. The tempd.pl gathers serial data from an Arduino mini, and sends it to Splunk; web data graphing / analysing tool, over Syslog.
