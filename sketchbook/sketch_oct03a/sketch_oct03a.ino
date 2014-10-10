@@ -137,7 +137,7 @@ void loop(){
   {
     // Temp mode
     
-    display_txt = (String)get_temp();
+    #display_txt = (String)get_temp();
 
     if(display_txt.equals("-127"))    
       punct_mark = NONE;
