@@ -6,6 +6,8 @@
 #include <SoftwareSerial.h>
 
 #include <pitches.h>
+//#include <stage.h>
+
 #define POTENTIOMETER_PIN A0
 #define TONE_PIN 6 // Pin you have speaker/piezo connected to (be sure to include a 100 ohm resistor).
 #define BUTTON_PIN 2 
@@ -137,7 +139,7 @@ void loop(){
   {
     // Temp mode
     
-    #display_txt = (String)get_temp();
+    display_txt = (String)get_temp();
 
     if(display_txt.equals("-127"))    
       punct_mark = NONE;
