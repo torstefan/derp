@@ -1,8 +1,18 @@
 #include "stage.h"
 #include "Arduino.h"
 
+Stage::Stage()
+{
+}
 
+Stage::Stage(int min_temp, int max_temp, int minutes)
+{
 
+  _min_temp = min_temp;
+  _max_temp = max_temp;
+  _length_minutes = minutes;
+
+}
 void Stage::setMaxTemp(int max_temp)
 {
   _max_temp = max_temp;
@@ -98,6 +108,8 @@ void Stage::pause(boolean paused)
     }
     
     if(_paused & !paused){
+	unsigned long time_now = millis();
+	_time_active -= (time_now - _time_paused);
 	_updateTimeActive();
     }
 

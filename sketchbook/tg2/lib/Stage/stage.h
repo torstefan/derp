@@ -13,6 +13,8 @@ class Stage
 {
   
   public:
+    Stage();
+    Stage(int min_temp, int max_temp, int minutes);
     void setMaxTemp(int max_temp);
     void setMinTemp(int min_temp);
     void setLength(int minutes);
