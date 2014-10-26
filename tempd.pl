@@ -3,7 +3,7 @@
     # Set up the serial port
     use Device::SerialPort;
     use File::Slurp;
-    my $port = Device::SerialPort->new("/dev/ttyUSB0");
+    my $port = Device::SerialPort->new("/dev/ttyUSB1");
     
     
     use Sys::Syslog;                          # Misses setlogsock.
@@ -41,7 +41,8 @@
     # Send a number to the arduino
     if ($char) {
         my $input = "$char \n";
-        $input =~/(\d{2,3}\.\d{2})/xm;
+	print "Input: $input \n";
+        $input =~/(\d{1,3}\.\d{2})/xm;
         my $temp = $1;
         if($temp !~ /\A\d/g){
             next;
