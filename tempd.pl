@@ -3,7 +3,15 @@
     # Set up the serial port
     use Device::SerialPort;
     use File::Slurp;
-    my $port = Device::SerialPort->new("/dev/ttyUSB1");
+
+    my $dmesg = `dmesg`;
+    my $tty;
+    if($dmesg =~/attached\sto\s(ttyUSB\d)/mx){
+
+	$tty = $1;
+    }
+	print "Tty: $tty\n";
+    my $port = Device::SerialPort->new("/dev/$tty");
     
     
     use Sys::Syslog;                          # Misses setlogsock.
