@@ -95,7 +95,7 @@ boolean Stage::isPaused()
 }
 
 
-void Stage::pause(boolean paused)
+unsigned long Stage::pause(boolean paused)
 {
     if(_time_started == 0)
     {
@@ -105,12 +105,14 @@ void Stage::pause(boolean paused)
     if(!_paused & paused)
     {
 	_time_paused = millis();
+	return _time_paused; 
     }
     
     if(_paused & !paused){
 	unsigned long time_now = millis();
 	_time_active -= (time_now - _time_paused);
 	_updateTimeActive();
+	return _time_active;
     }
 
     _paused = paused;

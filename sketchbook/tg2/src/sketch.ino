@@ -41,7 +41,11 @@ void loop()
 	{
 		if(button.uniquePress())
 		{
-			st.pause(!st.isPaused());	
+			st.isPaused() ? 
+			    Serial.print("Brewing timer paused: ") :
+			    Serial.print("Brewing timer active: ");
+
+			Serial.println(st.pause(!st.isPaused()));	
 		
 		}
 		if(st.isPaused())

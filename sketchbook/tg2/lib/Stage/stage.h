@@ -28,7 +28,7 @@ class Stage
     int timeLeft();
     boolean completed();
     boolean isPaused();
-    void pause(boolean paused);
+    unsigned long pause(boolean paused);
 
   private:
     void _updateTimeActive();
