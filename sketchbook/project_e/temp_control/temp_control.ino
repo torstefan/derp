@@ -3,11 +3,15 @@
 #include <SoftwareSerial.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include <Potentiometer.h>
+
+#define POTENTIOMETER_PIN A0
 
 #define DISPLAY_TX_PIN 8
 #define DISPLAY_RX_PIN 10
 #define DISPLAY_RESET_PIN 7
 
+#define BIG_BUTTON_PIN 2
 #define L_BUTTON_PIN 4
 #define R_BUTTON_PIN 5
 
@@ -20,6 +24,7 @@
 #define PRETTY_PRINT_MULTIPLIER 10
 
 #define PWR_SWITCH_PAUSE 20
+
 
 enum { COMMA=5, COMMA_10=6, COLON, NONE };
 enum { ON=10, OFF=11 };
@@ -36,6 +41,9 @@ int lastPowerState;
 
 int holdTemp;
 
+int menuItemSelected;
+
+Potentiometer potentiometer = Potentiometer(POTENTIOMETER_PIN);
 
 Button l_button = Button(L_BUTTON_PIN,BUTTON_PULLUP);
 Button r_button = Button(R_BUTTON_PIN,BUTTON_PULLUP);
@@ -64,6 +72,8 @@ void setup() {
   
   temp_probe.begin();
   temp_probe.setResolution(TEMPERATURE_PRECISION);
+  
+  potentiometer.setSectors(2); // Two choises for the menu. Temp control ON, or OFF
 
 }
 
@@ -83,8 +93,11 @@ void loop() {
     reset_display(DISPLAY_RESET_PIN);
   }
 
+  menuItemSelected = potentiometer.getSector();
+  
 
   if((millis() - lastPollPeriod) > pollPeriod) {
+  
     lastPollPeriod = millis();
     isLedOn = !isLedOn;
     digitalWrite(led, isLedOn ? HIGH : LOW );
@@ -94,16 +107,20 @@ void loop() {
     holdTemp = 30 * PRETTY_PRINT_MULTIPLIER;
     
     Serial.print("Time=");Serial.print(lastPollPeriod/1000);Serial.print(" ");
-    
-    if(temp > 0 & temp < (holdTemp)){
-      switch_remote_pwr(ON);   
+    Serial.print("Menu_selected="); Serial.print(menuItemSelected);Serial.print(" ");  
+
+
+    if(menuItemSelected == 1){
+          do_temp_control(temp, holdTemp);
+          write_text("H" + (String)temp,COMMA);    
     }else{
-      switch_remote_pwr(OFF);
-    }
-    Serial.print("Temp_0="), Serial.print(temp/PRETTY_PRINT_MULTIPLIER), Serial.print(" Hold_temp="), Serial.print(holdTemp), Serial.print(" ");
+          write_text((String)temp,COMMA);
+    }    
+
+    
     print_power_state();
     
-    write_text((String)temp,COMMA);
+
     c++;
   
 
@@ -113,6 +130,16 @@ void loop() {
   switch_remote_pwr(l_button.isPressed() ? ON : NONE);
   switch_remote_pwr(r_button.isPressed() ? OFF : NONE);
 
+}
+
+void do_temp_control(int temp, int holdTemp){
+  
+    if(temp > 0 & temp < (holdTemp)){
+      switch_remote_pwr(ON);   
+    }else{
+      switch_remote_pwr(OFF);
+    }
+    Serial.print("Temp_0="), Serial.print(temp/PRETTY_PRINT_MULTIPLIER), Serial.print(" Hold_temp="), Serial.print(holdTemp/PRETTY_PRINT_MULTIPLIER), Serial.print(" ");
 }
 
 void print_power_state(){
