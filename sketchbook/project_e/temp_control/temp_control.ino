@@ -105,11 +105,12 @@ void loop() {
     isLedOn = !isLedOn;
     digitalWrite(led, isLedOn ? HIGH : LOW );
   
-    int temp = get_temp();
+    float temp = get_temp();
+    long int temp_do_display = temp * PRETTY_PRINT_MULTIPLIER;
     
-    Serial.print("Time=");Serial.print(lastPollPeriod/1000);Serial.print(" ");
-    Serial.print("Menu_selected="); Serial.print(menuItemSelected);Serial.print(" ");  
-
+    Serial.print("Time=" + String(lastPollPeriod/1000) + " ");
+    Serial.print("Menu_selected=" + (String)menuItemSelected + " ");  
+    Serial.print("Temp_hr_0="); Serial.print(temp); Serial.print(" ");
 
     if(menuItemSelected == 1){
 
@@ -117,13 +118,14 @@ void loop() {
         holdTemp = get_new_hold_temp();
       }
       
-      if(do_temp_control(temp, holdTemp)){
-        write_text("H" + (String)(temp * PRETTY_PRINT_MULTIPLIER),COMMA);    
+      if(do_temp_control((int)temp, holdTemp)){
+        write_text("H" + (String)(temp_do_display),COMMA);    
       }else{
-        write_text("C" + (String)(temp * PRETTY_PRINT_MULTIPLIER),COMMA);    
-      }          
+        write_text("C" + (String)(temp_do_display),COMMA);    
+      }
+      
     }else{
-          write_text((String)(temp * PRETTY_PRINT_MULTIPLIER) ,COMMA);
+          write_text((String)(temp_do_display) ,COMMA);
     }    
 
     
@@ -143,7 +145,7 @@ void loop() {
 
 int get_new_hold_temp(){
   
-  int temp = get_temp();
+  int temp = (int)get_temp();
   clear_display();
   delay(200);
   write_text((String)(temp * PRETTY_PRINT_MULTIPLIER),COMMA);
@@ -164,7 +166,7 @@ boolean do_temp_control(int temp, int holdTemp){
     }else{
       switch_remote_pwr(OFF);
     }
-    Serial.print("Temp_0="), Serial.print(temp), Serial.print(" Hold_temp="), Serial.print(holdTemp), Serial.print(" ");
+    Serial.print("Temp_control="), Serial.print(temp), Serial.print(" Hold_temp="), Serial.print(holdTemp), Serial.print(" ");
     return on;
 }
 
@@ -230,13 +232,13 @@ void remote_power_on(){
     delay(500);
 }
 
-long int get_temp(){
+float get_temp(){
   temp_probe.requestTemperatures(); // Send the command to get temperatures
   
 
   //temp_probe.setResolution(TEMPERATURE_PRECISION);
   float t = temp_probe.getTempCByIndex(0);
-  return (long int) (t);
+  return t;
 
 }
 void blink_led(int led){
