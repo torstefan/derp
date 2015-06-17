@@ -19,7 +19,7 @@
 #define REMOTE_PWR_OFF 11
 
 #define TEMPERATURE_PROBE_PIN 9
-#define TEMPERATURE_PRECISION 9
+#define TEMPERATURE_PRECISION 11
 
 #define PRETTY_PRINT_MULTIPLIER 10
 
@@ -205,9 +205,20 @@ void switch_remote_pwr(int power_status){
         break;
     }
   }else if (l_button.isPressed() || r_button.isPressed()) {
-    write_text((String)(deltaTime / 1000), NONE);
-    delay(500);
-  
+    
+    if(power_status == ON && deltaTime < (PWR_SWITCH_PAUSE * 1000)){
+      write_text("ON", NONE);
+      
+    }else if(power_status == OFF && deltaTime < (PWR_SWITCH_PAUSE * 1000)){
+      write_text("OFF", NONE);    
+      
+    }else{
+      
+      write_text((String)(deltaTime / 1000), NONE);
+      delay(500);
+      write_text("D"+(String)PWR_SWITCH_PAUSE, NONE);
+      delay(500);  
+    }
   }
 }
 
