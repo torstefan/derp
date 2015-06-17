@@ -50,22 +50,20 @@
     if ($char) {
         my $input = "$char \n";
 	print "Input: $input \n";
-        $input =~/(\d{1,3}\.\d{2})/xm;
-        my $temp = $1;
-        if($temp !~ /\A\d/g){
+        if($input !~ /Time=/g){
             next;
             }
         my $date = `date`;
         chomp $date;
-        my $output = "\"temp\","."\"".$date."\",\"".$temp."\"\n";
+        my $output = $input;
         print $output;
         #append_file("temp.log", $output);
         
-        my $ident = "Project_c_temp_0";    
+        my $ident = "Project_c";    
         
         setlogsock({ type => "udp", host => "localhost", port => "1234"});
         openlog($ident, $logopt, $facility);    # don't forget this
-        syslog($priority, "temp=${temp}");        
+        syslog($priority, $output);        
         closelog();
     
         $i++;
