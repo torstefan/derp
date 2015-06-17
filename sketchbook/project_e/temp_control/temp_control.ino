@@ -39,14 +39,16 @@ int pollPeriod = 1000;
 
 int lastPowerState;
 
-int holdTemp;
+int holdTemp = 0;
 
 int menuItemSelected;
 
 Potentiometer potentiometer = Potentiometer(POTENTIOMETER_PIN);
 
+Button big_button = Button(BIG_BUTTON_PIN,BUTTON_PULLUP);
 Button l_button = Button(L_BUTTON_PIN,BUTTON_PULLUP);
 Button r_button = Button(R_BUTTON_PIN,BUTTON_PULLUP);
+
 
 SoftwareSerial s7s(DISPLAY_RX_PIN, DISPLAY_TX_PIN);
 
@@ -60,7 +62,8 @@ void setup() {
   // put your setup code here, to run once:
   pinMode(led,OUTPUT);
   pinMode(DISPLAY_RESET_PIN, OUTPUT);
-  
+
+  pinMode(BIG_BUTTON_PIN, INPUT_PULLUP); // Enable internal pull-up resistor on pin  
   pinMode(L_BUTTON_PIN, INPUT_PULLUP); // Enable internal pull-up resistor on pin
   pinMode(R_BUTTON_PIN, INPUT_PULLUP); // Enable internal pull-up resistor on pin
   
@@ -104,17 +107,23 @@ void loop() {
   
     int temp = get_temp();
     
-    holdTemp = 30 * PRETTY_PRINT_MULTIPLIER;
-    
     Serial.print("Time=");Serial.print(lastPollPeriod/1000);Serial.print(" ");
     Serial.print("Menu_selected="); Serial.print(menuItemSelected);Serial.print(" ");  
 
 
     if(menuItemSelected == 1){
-          do_temp_control(temp, holdTemp);
-          write_text("H" + (String)temp,COMMA);    
+
+      if(big_button.isPressed()){      
+        holdTemp = get_new_hold_temp();
+      }
+      
+      if(do_temp_control(temp, holdTemp)){
+        write_text("H" + (String)(temp * PRETTY_PRINT_MULTIPLIER),COMMA);    
+      }else{
+        write_text("C" + (String)(temp * PRETTY_PRINT_MULTIPLIER),COMMA);    
+      }          
     }else{
-          write_text((String)temp,COMMA);
+          write_text((String)(temp * PRETTY_PRINT_MULTIPLIER) ,COMMA);
     }    
 
     
@@ -132,14 +141,31 @@ void loop() {
 
 }
 
-void do_temp_control(int temp, int holdTemp){
+int get_new_hold_temp(){
   
+  int temp = get_temp();
+  clear_display();
+  delay(200);
+  write_text((String)(temp * PRETTY_PRINT_MULTIPLIER),COMMA);
+  delay(1000);
+  clear_display();
+  delay(200);
+  return temp;
+  
+
+}
+
+boolean do_temp_control(int temp, int holdTemp){
+    boolean on = false;
+    
     if(temp > 0 & temp < (holdTemp)){
-      switch_remote_pwr(ON);   
+      switch_remote_pwr(ON);
+      on = true;
     }else{
       switch_remote_pwr(OFF);
     }
-    Serial.print("Temp_0="), Serial.print(temp/PRETTY_PRINT_MULTIPLIER), Serial.print(" Hold_temp="), Serial.print(holdTemp/PRETTY_PRINT_MULTIPLIER), Serial.print(" ");
+    Serial.print("Temp_0="), Serial.print(temp), Serial.print(" Hold_temp="), Serial.print(holdTemp), Serial.print(" ");
+    return on;
 }
 
 void print_power_state(){
@@ -210,7 +236,7 @@ long int get_temp(){
 
   //temp_probe.setResolution(TEMPERATURE_PRECISION);
   float t = temp_probe.getTempCByIndex(0);
-  return (long int) (t * PRETTY_PRINT_MULTIPLIER);
+  return (long int) (t);
 
 }
 void blink_led(int led){
@@ -256,6 +282,10 @@ void write_text(String text, int punct_mark ){
 
   delay(100);
 
+}
+
+void clear_display(){
+  s7s.write(0x76);
 }
 
 void set_decimals(byte decimals)
