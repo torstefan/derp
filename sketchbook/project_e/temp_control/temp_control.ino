@@ -23,7 +23,7 @@
 
 #define PRETTY_PRINT_MULTIPLIER 10
 
-#define PWR_SWITCH_PAUSE 20
+#define MIN_PWR_SWITCH_PAUSE 20
 
 
 enum { COMMA=5, COMMA_10=6, COLON, NONE };
@@ -40,6 +40,7 @@ int pollPeriod = 1000;
 int lastPowerState;
 
 int holdTemp = 0;
+int pwr_switch_pause_addition = 0;
 
 int menuItemSelected;
 
@@ -97,10 +98,11 @@ void loop() {
   }
 
   menuItemSelected = potentiometer.getSector();
-  
 
-  if((millis() - lastPollPeriod) > pollPeriod) {
   
+  if((millis() - lastPollPeriod) > pollPeriod) {
+    get_new_variables_from_serial();
+    
     lastPollPeriod = millis();
     isLedOn = !isLedOn;
     digitalWrite(led, isLedOn ? HIGH : LOW );
@@ -143,6 +145,27 @@ void loop() {
 
 }
 
+void get_new_variables_from_serial(){
+
+  // Looks for bytes stored in a 64 byte serial input buffer
+  if(Serial.available() >0){
+    int new_holdTemp = Serial.parseInt();
+    int new_pwr_switch_pause_addition = Serial.parseInt();
+    
+    if(new_holdTemp > 0){
+        holdTemp = new_holdTemp;
+        Serial.print("New_holdTemp=" + (String)holdTemp +" ");    
+    }
+    
+    if(new_pwr_switch_pause_addition > 0){
+      pwr_switch_pause_addition = new_pwr_switch_pause_addition;
+      Serial.print("New_pwr_pause_addition=" + (String)pwr_switch_pause_addition +" ");
+    }
+
+  }
+
+}
+
 int get_new_hold_temp(){
   
   int temp = (int)get_temp();
@@ -181,16 +204,18 @@ void switch_remote_pwr(int power_status){
     return;
   }
 
+  int power_switch_pause_seconds =  MIN_PWR_SWITCH_PAUSE + pwr_switch_pause_addition;
+
   long deltaTime = millis() - timeSincePwrSwitch;
 
   Serial.print("delta_lock=");  
-  if(deltaTime > (PWR_SWITCH_PAUSE * 1000)){
+  if(deltaTime > (power_switch_pause_seconds * 1000)){
     Serial.print("OFF ");
   }else{
     Serial.print("ON ");  
   }
   
-  if(power_status != lastPowerState && deltaTime > (PWR_SWITCH_PAUSE * 1000)){  
+  if(power_status != lastPowerState & deltaTime > (power_switch_pause_seconds * 1000)){  
     switch(power_status)
     {
       case ON:
@@ -206,17 +231,16 @@ void switch_remote_pwr(int power_status){
     }
   }else if (l_button.isPressed() || r_button.isPressed()) {
     
-    if(power_status == ON && deltaTime < (PWR_SWITCH_PAUSE * 1000)){
-      write_text("ON", NONE);
+    if(power_status == ON & deltaTime < (power_switch_pause_seconds * 1000)){
+      write_text("-ON", NONE);
+      Serial.println("PS , LPS, PSPS, DT:" + (String)power_status + ", " + (String)lastPowerState + ", " + (String)power_switch_pause_seconds  + ", " + (String)deltaTime);
+    }else if(power_status == OFF & deltaTime < (power_switch_pause_seconds * 1000)){
+      write_text("-OFF", NONE);    
       
-    }else if(power_status == OFF && deltaTime < (PWR_SWITCH_PAUSE * 1000)){
-      write_text("OFF", NONE);    
-      
-    }else{
-      
+    }else{      
       write_text((String)(deltaTime / 1000), NONE);
       delay(500);
-      write_text("D"+(String)PWR_SWITCH_PAUSE, NONE);
+      write_text("D"+(String)power_switch_pause_seconds, NONE);
       delay(500);  
     }
   }
