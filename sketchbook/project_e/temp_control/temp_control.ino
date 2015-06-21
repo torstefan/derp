@@ -41,7 +41,6 @@ int lastPowerState;
 
 int holdTemp = 0;
 int pwr_switch_pause_addition = 0;
-int global_counter_to_ignore_stupid_input_bits = 0;
 
 int menuItemSelected;
 
@@ -151,26 +150,28 @@ void get_new_variables_from_serial(){
   int new_pwr_switch_pause_addition; // The pause time between switching the remote power on off.
   
   if(Serial.available() >0){
-    if(global_counter_to_ignore_stupid_input_bits == 0){
-      new_holdTemp = Serial.parseInt();
-      new_pwr_switch_pause_addition = Serial.parseInt();
 
-      global_counter_to_ignore_stupid_input_bits++; // Not working needs removal.
-      
-      if(new_holdTemp > 0){
+    new_holdTemp = Serial.parseInt();
+    new_pwr_switch_pause_addition = Serial.parseInt();
+  
+    if(Serial.read() == '\n'){
+      if(new_holdTemp >= 0){
         holdTemp = new_holdTemp;
         Serial.print("New_hold_temp=" + (String)holdTemp +" ");    
       }
       
-      if(new_pwr_switch_pause_addition !=0 & (MIN_PWR_SWITCH_PAUSE + new_pwr_switch_pause_addition) >= MIN_PWR_SWITCH_PAUSE){
+      if(new_pwr_switch_pause_addition >= 0){
+      
         pwr_switch_pause_addition = new_pwr_switch_pause_addition;
         Serial.println("Recived new_pwr_switch_pause_time=" + (String)new_pwr_switch_pause_addition);
       }    
-      
-    }
-
+    
+    } 
+    
   }
-  global_counter_to_ignore_stupid_input_bits = 0;
+
+  
+
   Serial.print("PSP=" + (String)(MIN_PWR_SWITCH_PAUSE + pwr_switch_pause_addition) + " ");
 }
 
