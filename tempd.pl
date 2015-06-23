@@ -4,15 +4,21 @@
     use Device::SerialPort;
     use File::Slurp;
     use warnings;
+	use strict;
 
-    my $dmesg = `dmesg | tail`;
+    my @dmesg = split /\n/, `dmesg`;
     my $tty;
-    if($dmesg =~/attached\sto\s(ttyUSB\d)/mx){
 
-	$tty = $1;
-    }
+	while(@dmesg){
+		my $dmesg = pop @dmesg;
+		if($dmesg =~/attached\sto\s(ttyUSB\d)/mx){
+			$tty = $1;
+			last;
+		}
+	}
 	print "Tty: $tty\n";
-    my $port = Device::SerialPort->new("/dev/$tty");
+    my $port = Device::SerialPort->new("/dev/$tty")
+		or die "Cant open /dev/$tty ";
     
     
     use Sys::Syslog;                          # Misses setlogsock.
@@ -44,7 +50,7 @@
     while (1) {
 	my $hold_temp; # New temperature to hold
 	my $pwr_sw_time; # Lock time for changing the power relay. As not to cause harm to physical equipment, and as a timing method.
-	my $fn_variables = "/tmp/project_c";
+	my $fn_variables = "/tmp/derp/running";
 	
 	# Check to see if new input variables has arrived
 	if(-e $fn_variables and -w $fn_variables){
@@ -67,14 +73,14 @@
     # If we get data, then print it
     if ($char) {
         my $input = "$char \n";
-	print "Input: $input \n";
-        if($input !~ /Time=/g){
+		print " Input: $input \n";
+        if($input !~ /Temp/g){
             next;
             }
         my $date = `date`;
         chomp $date;
         my $output = $input;
-        print $output;
+#        print $output;
         write_file("/tmp/temp.log", $output);
         
         my $ident = "Project_c";    
