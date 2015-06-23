@@ -4,6 +4,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include <Potentiometer.h>
+#include <MemoryFree.h>
 
 #define POTENTIOMETER_PIN A0
 
@@ -34,7 +35,7 @@ int c = 0;
 boolean isLedOn = false;
 long timeSincePwrSwitch;
 
-long lastPollPeriod = 0;
+unsigned long lastPollPeriod = 0;
 int pollPeriod = 1000;
 
 int lastPowerState;
@@ -91,6 +92,7 @@ void loop() {
     remote_power_off();
     print_power_state();  
     Serial.println();
+    Serial.println("MemoryFree " + (String)freeMemory());
     Serial.println("Setup complete..");
     Serial.println();
 
@@ -110,7 +112,7 @@ void loop() {
     float temp = get_temp();
     long int temp_do_display = temp * PRETTY_PRINT_MULTIPLIER;
     
-    Serial.print("Time=" + String(lastPollPeriod/1000) + " ");
+    Serial.print("MemoryFree=" + (String)freeMemory() + " ");
     Serial.print("Menu_selected=" + (String)menuItemSelected + " ");  
     Serial.print("Temp_hr_0="); Serial.print(temp); Serial.print(" ");
 
