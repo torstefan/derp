@@ -92,6 +92,7 @@
     
         $i++;
     }
+	sleep(1);
     
     # Uncomment the following lines, for slower reading,
     # but lower CPU usage, and to avoid
