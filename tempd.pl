@@ -5,6 +5,7 @@
     use File::Slurp;
     use warnings;
 	use strict;
+	use sigtrap qw/handler signal_handler normal-signals stack-trace error-signals/;
 
     my @dmesg = split /\n/, `dmesg`;
     my $tty;
@@ -16,9 +17,10 @@
 			last;
 		}
 	}
-	print "Tty: $tty\n";
+	print "Trying to open tty: $tty\n";
     my $port = Device::SerialPort->new("/dev/$tty")
 		or die "Cant open /dev/$tty ";
+	print "Connection to $tty a success!\n";
     
     
     use Sys::Syslog;                          # Misses setlogsock.
@@ -29,12 +31,13 @@
     
     
      
-     
+    print "Serial config start \n"; 
     # 9600, 81N on the USB ftdi driver
     $port->baudrate(9600); # you may change this value
     $port->databits(8); # but not this and the two following
     $port->parity("none");
     $port->stopbits(1);
+    print "Serial config done. \n"; 
      
     # now catch gremlins at start
     my $tEnd = time()+2; # 2 seconds in future
@@ -61,13 +64,17 @@
 			$hold_temp = $1;
 			$pwr_sw_time = $2;
 			my $output = $hold_temp . " " . $pwr_sw_time."\n";
+			print "[tempd.pl] Writing $output \n";
 			$port->write($output);
-			print "[tempd.pl] Writing $output";
+			print "[tempd.pl] Writing done.\n";
 	    }
 	    unlink $fn_variables;	
 	}
     # Poll to see if any data is coming in
+
+	print "[tempd.pl] Polling serial..\n";
     my $char = $port->lookfor();
+	print "[tempd.pl] Polling done.\n"; 
         
     
     # If we get data, then print it
@@ -102,4 +109,9 @@
     #sleep (1);
     }
 
-    
+   sub signal_handler{
+	print "Trying to close serial port\n";
+	$port->close || warn "close failed";
+	die "[templ.pl] Closing down. Signal: $!";
+   
+   } 
