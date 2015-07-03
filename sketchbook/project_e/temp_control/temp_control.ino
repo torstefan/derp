@@ -31,7 +31,7 @@ enum { COMMA=5, COMMA_10=6, COLON, NONE };
 enum { ON=10, OFF=11 };
 
 const int led = 12;
-int c = 0;
+
 boolean isLedOn = false;
 long timeSincePwrSwitch;
 
@@ -82,24 +82,18 @@ void setup() {
   
   potentiometer.setSectors(2); // Two choises for the menu. Temp control ON, or OFF
 
+Serial.println(F("Turning off remote power "));
+    remote_power_on();
+    delay(10000);
+    remote_power_off();
+    print_power_state();  
+    reset_display(DISPLAY_RESET_PIN);
+//  
 }
 
 void loop() {
   // put your main code here, to run repeatedly: 
 
-  if(c<1){
-    Serial.println(F("Turning off remote power "));
-    remote_power_on();
-    delay(10000);
-    remote_power_off();
-    print_power_state();  
-//    Serial.println();
-//    Serial.println("MemoryFree " + (String)freeMemory());
-//    Serial.println(F("Setup complete.."));
-//    Serial.println();
-
-    reset_display(DISPLAY_RESET_PIN);
-  }
 
   menuItemSelected = potentiometer.getSector();
   
@@ -145,10 +139,6 @@ void loop() {
 
     
     print_power_state();
-    
-
-    c++;
-  
 
    Serial.println(out);
   }
