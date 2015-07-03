@@ -10,16 +10,20 @@
     my @dmesg = split /\n/, `dmesg`;
     my $tty;
 
-	while(@dmesg){
-		my $dmesg = pop @dmesg;
-		if($dmesg =~/attached\sto\s(ttyUSB\d)/mx){
-			$tty = $1;
-			last;
+
+	foreach my $t ( glob '/dev/ttyUSB*'  ) {
+		if(-e $t){
+			$tty = $t;
 		}
 	}
+
+	if(!defined($tty)){
+		die "Could not find any serial devices..";
+	}
+
 	print "Trying to open tty: $tty\n";
-    my $port = Device::SerialPort->new("/dev/$tty")
-		or die "Cant open /dev/$tty ";
+    my $port = Device::SerialPort->new($tty)
+		or die "Cant open $tty ";
 	print "Connection to $tty a success!\n";
     
     

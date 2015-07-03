@@ -35,8 +35,8 @@ int c = 0;
 boolean isLedOn = false;
 long timeSincePwrSwitch;
 
-unsigned long lastPollPeriod = 0;
-int pollPeriod = 1000;
+long lastPollPeriod = 0;
+const int pollPeriod = 2000;
 
 int lastPowerState;
 
@@ -57,10 +57,12 @@ SoftwareSerial s7s(DISPLAY_RX_PIN, DISPLAY_TX_PIN);
 OneWire oneWire(TEMPERATURE_PROBE_PIN);
 DallasTemperature temp_probe(&oneWire);
 
+String out;
+
 void setup() {
   Serial.begin(9600);
-  Serial.println("Project C v0.2.");
-  Serial.println("Setup staring.");
+  Serial.println(F("Project C v0.2."));
+  Serial.println(F("Setup staring."));
   // put your setup code here, to run once:
   pinMode(led,OUTPUT);
   pinMode(DISPLAY_RESET_PIN, OUTPUT);
@@ -86,15 +88,15 @@ void loop() {
   // put your main code here, to run repeatedly: 
 
   if(c<1){
-    Serial.println("Turning off remote power ");
+    Serial.println(F("Turning off remote power "));
     remote_power_on();
     delay(10000);
     remote_power_off();
     print_power_state();  
-    Serial.println();
-    Serial.println("MemoryFree " + (String)freeMemory());
-    Serial.println("Setup complete..");
-    Serial.println();
+//    Serial.println();
+//    Serial.println("MemoryFree " + (String)freeMemory());
+//    Serial.println(F("Setup complete.."));
+//    Serial.println();
 
     reset_display(DISPLAY_RESET_PIN);
   }
@@ -103,6 +105,7 @@ void loop() {
   
 
   if((millis() - lastPollPeriod) > pollPeriod) {
+    out = "";
     get_new_variables_from_serial();
   
     lastPollPeriod = millis();
@@ -110,11 +113,18 @@ void loop() {
     digitalWrite(led, isLedOn ? HIGH : LOW );
   
     float temp = get_temp();
-    long int temp_do_display = temp * PRETTY_PRINT_MULTIPLIER;
+    int temp_do_display = temp * PRETTY_PRINT_MULTIPLIER;
     
-    Serial.print("MemoryFree=" + (String)freeMemory() + " ");
-    Serial.print("Menu_selected=" + (String)menuItemSelected + " ");  
-    Serial.print("Temp_hr_0="); Serial.print(temp); Serial.print(" ");
+    out += "Menu_selected="; 
+    out += menuItemSelected;
+    out += " Temp_hr_0=";
+    char outstr[15];
+    dtostrf(temp,7, 2, outstr);
+    out += outstr;
+    
+//    Serial.print("MemoryFree=" + (String)freeMemory() + " ");
+//    Serial.print("Menu_selected=" + (String)menuItemSelected + " ");  
+//    Serial.print("Temp_hr_0="); Serial.print(temp); Serial.print(" ");
 
     if(menuItemSelected == 1){
 
@@ -139,7 +149,7 @@ void loop() {
     c++;
   
 
-   Serial.println();
+   Serial.println(out);
   }
   
   switch_remote_pwr(l_button.isPressed() ? ON : NONE);
@@ -159,13 +169,15 @@ void get_new_variables_from_serial(){
     if(Serial.read() == '\n'){
       if(new_holdTemp >= 0){
         holdTemp = new_holdTemp;
-        Serial.print("New_hold_temp=" + (String)holdTemp +" ");    
+        // Serial.print("New_hold_temp=" + (String)holdTemp +" ");    
+        out = out + "New_hold_temp=" + (String)holdTemp +" ";
       }
       
       if(new_pwr_switch_pause_addition >= 0){
       
         pwr_switch_pause_addition = new_pwr_switch_pause_addition;
-        Serial.println("Recived new_pwr_switch_pause_time=" + (String)new_pwr_switch_pause_addition);
+        // Serial.print(F("Recived new_pwr_switch_pause_time=" )); Serial.println(new_pwr_switch_pause_addition);
+        out = out + "Recived new_pwr_switch_pause_time=" + new_pwr_switch_pause_addition + " ";
       }    
     
     } 
@@ -174,7 +186,8 @@ void get_new_variables_from_serial(){
 
   
 
-  Serial.print("PSP=" + (String)(MIN_PWR_SWITCH_PAUSE + pwr_switch_pause_addition) + " ");
+//  Serial.print("PSP=" + (String)(MIN_PWR_SWITCH_PAUSE + pwr_switch_pause_addition) + " ");
+  out = out + "PSP=" + (String)(MIN_PWR_SWITCH_PAUSE + pwr_switch_pause_addition) + " ";
 }
 
 int get_new_hold_temp(){
@@ -200,13 +213,18 @@ boolean do_temp_control(int temp, int holdTemp){
     }else{
       switch_remote_pwr(OFF);
     }
-    Serial.print("Temp_control="), Serial.print(temp), Serial.print(" Hold_temp="), Serial.print(holdTemp), Serial.print(" ");
+    // Serial.print("Temp_control="), Serial.print(temp), Serial.print(" Hold_temp="), Serial.print(holdTemp), Serial.print(" ");
+    out = out + "Temp_control=" + temp + " Hold_temp=" + holdTemp + " ";
+    
     return on;
 }
 
 void print_power_state(){
-  Serial.print("Last_Power_State=");
-  lastPowerState == 11 ? Serial.print("OFF") : Serial.print("ON");
+//  Serial.print("Last_Power_State=");
+  
+  out = out + "Last_Power_State=";
+  lastPowerState == 11 ? out = out + "OFF " : out = out + "ON ";
+
 
 }
 
@@ -220,11 +238,12 @@ void switch_remote_pwr(int power_status){
 
   long deltaTime = millis() - timeSincePwrSwitch;
 
-  Serial.print("delta_lock=");  
+  //Serial.print("delta_lock=");  
+  out = out + "delta_lock=";
   if(deltaTime > (power_switch_pause_seconds * 1000)){
-    Serial.print("OFF ");
+    out = out + "OFF ";
   }else{
-    Serial.print("ON ");  
+    out = out + "ON ";
   }
   
   if(power_status != lastPowerState && deltaTime > (power_switch_pause_seconds * 1000)){  
