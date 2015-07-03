@@ -61,7 +61,7 @@ String out;
 
 void setup() {
   Serial.begin(9600);
-  Serial.println(F("Project C v0.2."));
+  Serial.println(F("Project C - SousVide Edition"));
   Serial.println(F("Setup staring."));
   // put your setup code here, to run once:
   pinMode(led,OUTPUT);
