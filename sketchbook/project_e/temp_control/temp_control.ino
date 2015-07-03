@@ -92,8 +92,6 @@ Serial.println(F("Turning off remote power "));
 }
 
 void loop() {
-  // put your main code here, to run repeatedly: 
-
 
   menuItemSelected = potentiometer.getSector();
   
@@ -117,10 +115,6 @@ void loop() {
     out += outstr;
     out += " ";
     
-//    Serial.print("MemoryFree=" + (String)freeMemory() + " ");
-//    Serial.print("Menu_selected=" + (String)menuItemSelected + " ");  
-//    Serial.print("Temp_hr_0="); Serial.print(temp); Serial.print(" ");
-
     if(menuItemSelected == 1){
 
       if(big_button.isPressed()){      
@@ -160,14 +154,14 @@ void get_new_variables_from_serial(){
     if(Serial.read() == '\n'){
       if(new_holdTemp >= 0){
         holdTemp = new_holdTemp;
-        // Serial.print("New_hold_temp=" + (String)holdTemp +" ");    
+
         out = out + "New_hold_temp=" + (String)holdTemp +" ";
       }
       
       if(new_pwr_switch_pause_addition >= 0){
       
         pwr_switch_pause_addition = new_pwr_switch_pause_addition;
-        // Serial.print(F("Recived new_pwr_switch_pause_time=" )); Serial.println(new_pwr_switch_pause_addition);
+
         out = out + "Recived new_pwr_switch_pause_time=" + new_pwr_switch_pause_addition + " ";
       }    
     
@@ -175,9 +169,6 @@ void get_new_variables_from_serial(){
     
   }
 
-  
-
-//  Serial.print("PSP=" + (String)(MIN_PWR_SWITCH_PAUSE + pwr_switch_pause_addition) + " ");
   out = out + "PSP=" + (String)(MIN_PWR_SWITCH_PAUSE + pwr_switch_pause_addition) + " ";
 }
 
@@ -204,15 +195,14 @@ boolean do_temp_control(int temp, int holdTemp){
     }else{
       switch_remote_pwr(OFF);
     }
-    // Serial.print("Temp_control="), Serial.print(temp), Serial.print(" Hold_temp="), Serial.print(holdTemp), Serial.print(" ");
+
     out = out + "Temp_control=" + temp + " Hold_temp=" + holdTemp + " ";
     
     return on;
 }
 
 void print_power_state(){
-//  Serial.print("Last_Power_State=");
-  
+ 
   out = out + "Last_Power_State=";
   lastPowerState == 11 ? out = out + "OFF " : out = out + "ON ";
 
@@ -229,7 +219,7 @@ void switch_remote_pwr(int power_status){
 
   long deltaTime = millis() - timeSincePwrSwitch;
 
-  //Serial.print("delta_lock=");  
+
   out = out + "delta_lock=";
   if(deltaTime > (power_switch_pause_seconds * 1000)){
     out = out + "OFF ";
@@ -313,7 +303,6 @@ void reset_display(int resetDispPin){
 void write_text(String text, int punct_mark ){
   char tempString[10];  // Will be used with sprintf to create strings
 
-  //Serial.println(text);
   char t[5];
   text.toCharArray(t,5);
   sprintf(tempString, "%4s", t);
