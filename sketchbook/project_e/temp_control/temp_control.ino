@@ -63,7 +63,7 @@ void setup() {
   Serial.begin(9600);
   Serial.println(F("Project C - SousVide Edition"));
   Serial.println(F("Setup staring."));
-  // put your setup code here, to run once:
+
   pinMode(led,OUTPUT);
   pinMode(DISPLAY_RESET_PIN, OUTPUT);
 
@@ -82,13 +82,13 @@ void setup() {
   
   potentiometer.setSectors(2); // Two choises for the menu. Temp control ON, or OFF
 
-Serial.println(F("Turning off remote power "));
-    remote_power_on();
-    delay(10000);
-    remote_power_off();
-    print_power_state();  
-    reset_display(DISPLAY_RESET_PIN);
-//  
+  Serial.println(F("Turning off remote power "));
+  remote_power_on();
+  delay(10000);
+  remote_power_off();
+  print_power_state();  
+  reset_display(DISPLAY_RESET_PIN);
+  
 }
 
 void loop() {
