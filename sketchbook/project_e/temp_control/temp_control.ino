@@ -119,8 +119,9 @@ void loop() {
     out += menuItemSelected;
     out += " Temp_hr_0=";
     char outstr[15];
-    dtostrf(temp,7, 2, outstr);
+    dtostrf(temp,sizeof(temp), 2, outstr);
     out += outstr;
+    out += " ";
     
 //    Serial.print("MemoryFree=" + (String)freeMemory() + " ");
 //    Serial.print("Menu_selected=" + (String)menuItemSelected + " ");  
