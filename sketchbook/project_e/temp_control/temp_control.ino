@@ -188,18 +188,19 @@ void get_new_variables_from_serial(){
       if(new_holdTemp >= 0){
         holdTemp = new_holdTemp;
 
-        out = out + "New_hold_temp=" + (String)holdTemp +" ";
+        out = out + "\n\nnew_hold_temp=" + (String)holdTemp +" ";
       }
       
       if(new_pwr_switch_pause_addition >= 0){
       
         pwr_switch_pause_addition = new_pwr_switch_pause_addition;
 
-        out = out + "Recived new_pwr_switch_pause_time=" + new_pwr_switch_pause_addition + " ";
+        out = out + "new_pwr_switch_pause_time=" + new_pwr_switch_pause_addition + " ";
       }    
 
       if(new_acceptedChange > -50.0){      
-        acceptedChange = new_acceptedChange;      
+        acceptedChange = new_acceptedChange;
+        out = out + "new_accepted_change=" + to_string_from_float(new_acceptedChange) + " \n\n";
       }
     
     } 
