@@ -45,6 +45,7 @@ int lastTempChangePeriod = 0;
 int lastPowerState;
 
 int holdTemp = 0;
+float acceptedChange = 0.0;
 int pwr_switch_pause_addition = 0;
 
 int menuItemSelected;
@@ -128,7 +129,7 @@ void loop() {
       
       // Main magic - Does temp control on heater, and writes the result to dispaly
       
-      if(do_temp_control((int)temp, holdTemp)){
+      if(do_temp_control(temp, holdTemp)){
         write_text("H" + (String)(temp_do_display),COMMA);    
       }else{
         write_text("C" + (String)(temp_do_display),COMMA);    
@@ -175,11 +176,13 @@ float get_temp_change(unsigned int per_n_second, float temp_now){
 void get_new_variables_from_serial(){
   int new_holdTemp; // Tells the arduno which temperature to reach.
   int new_pwr_switch_pause_addition; // The pause time between switching the remote power on off.
+  float new_acceptedChange;
   
   if(Serial.available() >0){
 
     new_holdTemp = Serial.parseInt();
     new_pwr_switch_pause_addition = Serial.parseInt();
+    new_acceptedChange = Serial.parseFloat();
   
     if(Serial.read() == '\n'){
       if(new_holdTemp >= 0){
@@ -194,6 +197,10 @@ void get_new_variables_from_serial(){
 
         out = out + "Recived new_pwr_switch_pause_time=" + new_pwr_switch_pause_addition + " ";
       }    
+
+      if(new_acceptedChange > -50.0){      
+        acceptedChange = new_acceptedChange;      
+      }
     
     } 
     
@@ -215,12 +222,14 @@ int get_new_hold_temp(){
   
 
 }
-
-boolean do_temp_control(int temp, int holdTemp){
+//
+// Magic happens here!
+//
+boolean do_temp_control(float temp, int holdTemp){
     boolean on = false;
     
     // Logic
-    // Heater is on when temp is under holdTemp and change is negative or zero
+    // Heater is on when temp is under holdTemp and change is under accepted change
     // Check for change in temp each N second;
 
     // Temp also has to be above 0 degrees, since removal of temp probe gives -127.
@@ -228,17 +237,20 @@ boolean do_temp_control(int temp, int holdTemp){
     
     float tempChange = get_temp_change(10, temp);
     
-    if(temp > 0 & temp < (holdTemp) & tempChange <= 0.0){
+    if(temp > 0 & temp < (holdTemp) & tempChange <= acceptedChange){
       switch_remote_pwr(ON);
       on = true;
     }else{
       switch_remote_pwr(OFF);
     }
- 
-    out += "Temp_change=";
-    out += to_string_from_float(tempChange) + " ";
-
-    out = out + "Temp_control=" + temp + " Hold_temp=" + holdTemp + " ";
+   
+    out += "Accepted_change="to_string_from_float(acceptedChange) + " ";
+    if(tempChange != 0){
+      out += "Temp_change=";
+      out += to_string_from_float(tempChange) + " ";
+    }
+    
+    out = out + "Temp_control=" + to_string_from_float(temp) + " Hold_temp=" + holdTemp + " ";
     
     return on;
 }

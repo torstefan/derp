@@ -84,8 +84,8 @@
     # If we get data, then print it
     if ($char) {
         my $input = "$char \n";
-		print " Input: $input \n";
-        if($input !~ /Temp/g){
+		print " Input: $input";
+        if($input !~ /Temp/ig){
             next;
             }
         my $date = `date`;
