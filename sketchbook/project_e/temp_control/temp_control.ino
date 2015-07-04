@@ -39,7 +39,7 @@ unsigned long lastPollPeriod = 0;
 const int pollPeriod = 1000;
 
 unsigned long lastTimeChangePeriod = 0;
-int lastTempChangePeriod = 0;
+float lastTempChangePeriod = 0.0;
 
 
 int lastPowerState;
