@@ -222,6 +222,9 @@ boolean do_temp_control(int temp, int holdTemp){
     // Logic
     // Heater is on when temp is under holdTemp and change is negative or zero
     // Check for change in temp each N second;
+
+    // Temp also has to be above 0 degrees, since removal of temp probe gives -127.
+    // system is designed not to work below zero degrees
     
     float tempChange = get_temp_change(10, temp);
     
