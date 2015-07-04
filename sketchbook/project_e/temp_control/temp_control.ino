@@ -236,7 +236,7 @@ boolean do_temp_control(int temp, int holdTemp){
     }
  
     out += "Temp_change=";
-    out += to_string_from_float(tempChange);
+    out += to_string_from_float(tempChange) + " ";
 
     out = out + "Temp_control=" + temp + " Hold_temp=" + holdTemp + " ";
     
