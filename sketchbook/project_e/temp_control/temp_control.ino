@@ -24,7 +24,7 @@
 
 #define PRETTY_PRINT_MULTIPLIER 10
 
-#define MIN_PWR_SWITCH_PAUSE 20
+#define MIN_PWR_SWITCH_PAUSE 10
 
 
 enum { COMMA=5, COMMA_10=6, COLON, NONE };
@@ -35,8 +35,12 @@ const int led = 12;
 boolean isLedOn = false;
 long timeSincePwrSwitch;
 
-long lastPollPeriod = 0;
-const int pollPeriod = 2000;
+unsigned long lastPollPeriod = 0;
+const int pollPeriod = 1000;
+
+unsigned long lastTimeChangePeriod = 0;
+int lastTempChangePeriod = 0;
+
 
 int lastPowerState;
 
@@ -97,22 +101,23 @@ void loop() {
   
 
   if((millis() - lastPollPeriod) > pollPeriod) {
-    out = "";
-    get_new_variables_from_serial();
-  
     lastPollPeriod = millis();
+  
     isLedOn = !isLedOn;
     digitalWrite(led, isLedOn ? HIGH : LOW );
   
+    out = "";
+    get_new_variables_from_serial();
+    
     float temp = get_temp();
     int temp_do_display = temp * PRETTY_PRINT_MULTIPLIER;
     
     out += "Menu_selected="; 
     out += menuItemSelected;
+    
+    // Converts the float into a serial 
     out += " Temp_hr_0=";
-    char outstr[15];
-    dtostrf(temp,sizeof(temp), 2, outstr);
-    out += outstr;
+    out += to_string_from_float(temp);
     out += " ";
     
     if(menuItemSelected == 1){
@@ -120,6 +125,8 @@ void loop() {
       if(big_button.isPressed()){      
         holdTemp = get_new_hold_temp();
       }
+      
+      // Main magic - Does temp control on heater, and writes the result to dispaly
       
       if(do_temp_control((int)temp, holdTemp)){
         write_text("H" + (String)(temp_do_display),COMMA);    
@@ -140,6 +147,29 @@ void loop() {
   switch_remote_pwr(l_button.isPressed() ? ON : NONE);
   switch_remote_pwr(r_button.isPressed() ? OFF : NONE);
 
+}
+
+String to_string_from_float(float input){
+    char outstr[15];
+    dtostrf(input,sizeof(input), 2, outstr); // input float, output size, trailing digits after . , putput buffer.
+    return (String)outstr;
+}
+
+float get_temp_change(unsigned int per_n_second, float temp_now){
+
+  
+    if((millis() - lastTimeChangePeriod) > (per_n_second * 1000)){
+      
+      float temp_change  = temp_now  - lastTempChangePeriod;
+
+      lastTimeChangePeriod = millis();
+      lastTempChangePeriod = temp_now;
+     
+      return temp_change;      
+      
+    }else{
+      return 0;
+    }  
 }
 
 void get_new_variables_from_serial(){
@@ -189,12 +219,21 @@ int get_new_hold_temp(){
 boolean do_temp_control(int temp, int holdTemp){
     boolean on = false;
     
-    if(temp > 0 & temp < (holdTemp)){
+    // Logic
+    // Heater is on when temp is under holdTemp and change is negative or zero
+    // Check for change in temp each N second;
+    
+    float tempChange = get_temp_change(10, temp);
+    
+    if(temp > 0 & temp < (holdTemp) & tempChange <= 0.0){
       switch_remote_pwr(ON);
       on = true;
     }else{
       switch_remote_pwr(OFF);
     }
+ 
+    out += "Temp_change=";
+    out += to_string_from_float(tempChange);
 
     out = out + "Temp_control=" + temp + " Hold_temp=" + holdTemp + " ";
     

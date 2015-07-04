@@ -76,9 +76,9 @@
 	}
     # Poll to see if any data is coming in
 
-	print "[tempd.pl] Polling serial..\n";
+	# print "[tempd.pl] Polling serial..\n";
     my $char = $port->lookfor();
-	print "[tempd.pl] Polling done.\n"; 
+	# print "[tempd.pl] Polling done.\n"; 
         
     
     # If we get data, then print it
