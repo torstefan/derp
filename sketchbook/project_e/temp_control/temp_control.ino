@@ -120,6 +120,8 @@ void loop() {
     out += " Temp_hr_0=";
     out += to_string_from_float(temp);
     out += " ";
+
+    print_power_state();
     
     if(menuItemSelected == 1){
 
@@ -140,7 +142,7 @@ void loop() {
     }    
 
     
-    print_power_state();
+
 
    Serial.println(out);
   }
@@ -236,23 +238,22 @@ boolean do_temp_control(float temp, int holdTemp){
     // Temp also has to be above 0 degrees, since removal of temp probe gives -127.
     // system is designed not to work below zero degrees
     
-    float tempChange = get_temp_change(10, temp);
+    float tempChange = get_temp_change(1, temp);
     
-    if(temp > 0 & temp < (holdTemp) & tempChange <= acceptedChange){
+    if(temp > 0 & temp < (holdTemp) & tempChange < acceptedChange){
       switch_remote_pwr(ON);
       on = true;
     }else{
       switch_remote_pwr(OFF);
     }
-   
+       
+    out = out + "Temp_control=" + to_string_from_float(temp) + " Hold_temp=" + holdTemp + " ";
+    
     out += "Accepted_change=" + to_string_from_float(acceptedChange) + " ";
     if(tempChange != 0){
       out += "Temp_change=";
       out += to_string_from_float(tempChange) + " ";
     }
-    
-    out = out + "Temp_control=" + to_string_from_float(temp) + " Hold_temp=" + holdTemp + " ";
-    
     return on;
 }
 
