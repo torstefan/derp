@@ -10,16 +10,20 @@
     my @dmesg = split /\n/, `dmesg`;
     my $tty;
 
-	while(@dmesg){
-		my $dmesg = pop @dmesg;
-		if($dmesg =~/attached\sto\s(ttyUSB\d)/mx){
-			$tty = $1;
-			last;
+
+	foreach my $t ( glob '/dev/ttyUSB*'  ) {
+		if(-e $t){
+			$tty = $t;
 		}
 	}
+
+	if(!defined($tty)){
+		die "Could not find any serial devices..";
+	}
+
 	print "Trying to open tty: $tty\n";
-    my $port = Device::SerialPort->new("/dev/$tty")
-		or die "Cant open /dev/$tty ";
+    my $port = Device::SerialPort->new($tty)
+		or die "Cant open $tty ";
 	print "Connection to $tty a success!\n";
     
     
@@ -72,16 +76,16 @@
 	}
     # Poll to see if any data is coming in
 
-	print "[tempd.pl] Polling serial..\n";
+	# print "[tempd.pl] Polling serial..\n";
     my $char = $port->lookfor();
-	print "[tempd.pl] Polling done.\n"; 
+	# print "[tempd.pl] Polling done.\n"; 
         
     
     # If we get data, then print it
     if ($char) {
         my $input = "$char \n";
-		print " Input: $input \n";
-        if($input !~ /Temp/g){
+		print " Input: $input";
+        if($input !~ /Temp/ig){
             next;
             }
         my $date = `date`;
@@ -99,7 +103,7 @@
     
         $i++;
     }
-	sleep(1);
+	sleep(0.5);
     
     # Uncomment the following lines, for slower reading,
     # but lower CPU usage, and to avoid
