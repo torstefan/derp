@@ -238,7 +238,7 @@ boolean do_temp_control(float temp, int holdTemp){
     // Temp also has to be above 0 degrees, since removal of temp probe gives -127.
     // system is designed not to work below zero degrees
     
-    float tempChange = get_temp_change(1, temp);
+    float tempChange = get_temp_change(20, temp);
     
     if(temp > 0 & temp < (holdTemp) & tempChange < acceptedChange){
       switch_remote_pwr(ON);
