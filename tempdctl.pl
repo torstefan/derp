@@ -43,9 +43,9 @@ if (! -d "/tmp/derp/"){
 
 if (defined($holdTemp) | defined($pwr_switch_pause_addition) | defined($acceptedChange) ){
 	print "holdTemp: $holdTemp, output: $output\n";
-	defined $holdTemp 					? $output .= $holdTemp." "					: $output .= "0 ";
+	defined $holdTemp					? $output .= $holdTemp." "					: $output .= "0 ";
 	print "holdTemp: $holdTemp, output: $output\n";
-	defined $pwr_switch_pause_addition 	? $output .= $pwr_switch_pause_addition." " : $output .= "0 ";
+	defined $pwr_switch_pause_addition	? $output .= $pwr_switch_pause_addition." " : $output .= "0 ";
 	defined $acceptedChange				? $output .= $acceptedChange." " 			: $output .= "0.0";
 	$output .= "\n";
 	write_file("/tmp/derp/running", $output) or die "$!";
