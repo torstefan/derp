@@ -36,8 +36,8 @@
     
      
     print "Serial config start \n"; 
-    # 9600, 81N on the USB ftdi driver
-    $port->baudrate(9600); # you may change this value
+    # 115200, 81N on the USB ftdi driver
+    $port->baudrate(115200); # you may change this value
     $port->databits(8); # but not this and the two following
     $port->parity("none");
     $port->stopbits(1);
@@ -54,9 +54,18 @@
     
     my $i=0;
     
+	if ( !-d "/tmp/derp" ) {
+		`mkdir /tmp/derp`;
+
+		if (! -r "/tmp/derp/running" ) {
+			`touch /tmp/derp/running`;
+		}
+	}
+
     while (1) {
 	my $hold_temp; # New temperature to hold
 	my $pwr_sw_time; # Lock time for changing the power relay. As not to cause harm to physical equipment, and as a timing method.
+	
 	my $fn_variables = "/tmp/derp/running";
 	
 	# Check to see if new input variables has arrived
@@ -64,10 +73,9 @@
 	    my $tmp = `cat $fn_variables`;
 	    chomp $tmp;
 	    # Sanity check the input variables
-	    if($tmp =~/^(.*?)\s+(.*)$/){
+	    if($tmp =~/^(.*?)$/){
 			$hold_temp = $1;
-			$pwr_sw_time = $2;
-			my $output = $hold_temp . " " . $pwr_sw_time."\n";
+			my $output = $hold_temp."\n";
 			print "[tempd.pl] Writing $output \n";
 			$port->write($output);
 			print "[tempd.pl] Writing done.\n";
