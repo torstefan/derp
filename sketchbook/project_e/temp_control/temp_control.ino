@@ -77,7 +77,7 @@ double Setpoint, Input, Output;
 //Specify the links and initial tuning parameters
 PID myPID(&Input, &Output, &Setpoint,2,5,1, DIRECT);
 
-int WindowSize = 20000;
+int WindowSize = 5000;
 unsigned long windowStartTime;
 
 
@@ -106,7 +106,7 @@ void setup() {
 
   Serial.println(F("Turning off remote power "));
   remote_power_on();
-  delay(10000);
+  delay(5000);
   remote_power_off();
   print_power_state();  
   reset_display(DISPLAY_RESET_PIN);
@@ -119,8 +119,8 @@ void setup() {
   //initialize the variables we're linked to
   Setpoint = 100;
 
-  //tell the PID to range between minimum and the full window size
-  myPID.SetOutputLimits((MIN_PWR_SWITCH_PAUSE*1000), WindowSize);
+  //tell the PID to range between 0 and the full window size
+  myPID.SetOutputLimits(0, WindowSize);
 
   //turn the PID on
   myPID.SetMode(AUTOMATIC);
@@ -139,24 +139,21 @@ void loop() {
   
     out = "";
     get_new_variables_from_serial();
+    print_power_state();
     
     float temp = get_temp();
     int temp_do_display = temp * PRETTY_PRINT_MULTIPLIER;
-    
-    out += "Menu_selected="; 
-    out += menuItemSelected;
-    
-    // Converts the float into a serial 
-    out += " Temp_hr_0=";
-    out += to_string_from_float(temp);
-    out += " ";
+    print_status(temp);
 
-    print_power_state();
+
+    
     
     if(menuItemSelected == 1){
 
-      if(big_button.isPressed()){      
+      if(big_button.isPressed()){
+        myPID.SetMode(MANUAL);
         holdTemp = get_new_hold_temp();
+        myPID.SetMode(AUTOMATIC);
       }
       
       // Main magic - Does temp control on heater, and writes the result to dispaly
@@ -188,6 +185,22 @@ String to_string_from_float(float input){
     return (String)outstr;
 }
 
+void print_status(float temp){
+    out += "Menu_selected="; 
+    out += menuItemSelected;
+    
+    // Converts the float into a serial 
+    out += " Temp_hr_0=";
+    out += to_string_from_float(temp);
+    out += " ";
+    
+    out += "Hold_temp=" + (String)holdTemp + " ";
+    float tempChange = get_temp_change(10, temp);
+    
+    out += "Temp_change=";
+    out += to_string_from_float(tempChange) + " ";
+  }
+
 float get_temp_change(unsigned int per_n_second, float temp_now){
 
   
@@ -213,26 +226,12 @@ void get_new_variables_from_serial(){
   if(Serial.available() >0){
 
     new_holdTemp = Serial.parseInt();
-    new_pwr_switch_pause_addition = Serial.parseInt();
-    new_acceptedChange = Serial.parseFloat();
-  
+    
     if(Serial.read() == '\n'){
       if(new_holdTemp >= 0){
         holdTemp = new_holdTemp;
 
-        out = out + "\n\nnew_hold_temp=" + (String)holdTemp +" ";
-      }
-      
-      if(new_pwr_switch_pause_addition >= 0){
-      
-        pwr_switch_pause_addition = new_pwr_switch_pause_addition;
-
-        out = out + "new_pwr_switch_pause_time=" + new_pwr_switch_pause_addition + " ";
-      }    
-
-      if(new_acceptedChange > -50.0){      
-        acceptedChange = new_acceptedChange;
-        out = out + "new_accepted_change=" + to_string_from_float(new_acceptedChange) + " \n\n";
+        out = out + "\nnew_hold_temp=" + (String)holdTemp +"\n";
       }
     
     } 
@@ -259,11 +258,17 @@ int get_new_hold_temp(){
 // Magic happens here!
 //
 boolean do_temp_control(float temp, int holdTemp){
+
+    print_pid_params();
+
     
     Input = (double)get_temp();
     Setpoint = (double) holdTemp;
     myPID.Compute();
-    out += "Hold_temp=" + holdTemp;
+    // Make the output match the now - windowStartTime
+    Output *= 100;
+    out += "PID_output=" + (String)Output + " ";
+    
     
     /************************************************
      * turn the output pin on/off based on pid output
@@ -273,6 +278,8 @@ boolean do_temp_control(float temp, int holdTemp){
     { //time to shift the Relay Window
       windowStartTime += WindowSize;
     }
+    out +="PID_gt=" + (String)(now - windowStartTime) + " ";
+            
     if(Output > now - windowStartTime) {      
       switch_remote_pwr(ON);
       return true;
@@ -282,6 +289,15 @@ boolean do_temp_control(float temp, int holdTemp){
     }
     
 }
+
+void print_pid_params(){
+  out += "Kp=" + (String)myPID.GetKp() + " ";
+  out += "Ki=" + (String)myPID.GetKi() + " ";
+  out += "Kd=" + (String)myPID.GetKd() + " ";
+  out += "PID_mode=" + (String)myPID.GetMode() + " ";
+  out += "PID_direction=" + (String)myPID.GetDirection() + " ";
+  
+  }
 
 void print_power_state(){
  
