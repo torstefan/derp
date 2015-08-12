@@ -1,15 +1,17 @@
-
 #include <Button.h>
 #include <SoftwareSerial.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include <Potentiometer.h>
 #include <MemoryFree.h>
+#include <PID_v1.h>
 
 #define POTENTIOMETER_PIN A0
 
 #define DISPLAY_TX_PIN 8
 #define DISPLAY_RX_PIN 10
+
+
 #define DISPLAY_RESET_PIN 7
 
 #define BIG_BUTTON_PIN 2
@@ -64,8 +66,23 @@ DallasTemperature temp_probe(&oneWire);
 
 String out;
 
+
+//
+// PID - Global variables 
+//
+
+//Define Variables we'll be connecting to
+double Setpoint, Input, Output;
+
+//Specify the links and initial tuning parameters
+PID myPID(&Input, &Output, &Setpoint,2,5,1, DIRECT);
+
+int WindowSize = 20000;
+unsigned long windowStartTime;
+
+
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println(F("Project C - SousVide Edition"));
   Serial.println(F("Setup staring."));
 
@@ -93,7 +110,20 @@ void setup() {
   remote_power_off();
   print_power_state();  
   reset_display(DISPLAY_RESET_PIN);
-  
+
+  //
+  // Pid - Setup
+  //
+  windowStartTime = millis();
+
+  //initialize the variables we're linked to
+  Setpoint = 100;
+
+  //tell the PID to range between minimum and the full window size
+  myPID.SetOutputLimits((MIN_PWR_SWITCH_PAUSE*1000), WindowSize);
+
+  //turn the PID on
+  myPID.SetMode(AUTOMATIC);
 }
 
 void loop() {
@@ -229,32 +259,28 @@ int get_new_hold_temp(){
 // Magic happens here!
 //
 boolean do_temp_control(float temp, int holdTemp){
-    boolean on = false;
     
-    // Logic
-    // Heater is on when temp is under holdTemp and change is under accepted change
-    // Check for change in temp each N second;
-
-    // Temp also has to be above 0 degrees, since removal of temp probe gives -127.
-    // system is designed not to work below zero degrees
+    Input = (double)get_temp();
+    Setpoint = (double) holdTemp;
+    myPID.Compute();
+    out += "Hold_temp=" + holdTemp;
     
-    float tempChange = get_temp_change(20, temp);
-    
-    if(temp > 0 & temp < (holdTemp) & tempChange < acceptedChange){
+    /************************************************
+     * turn the output pin on/off based on pid output
+     ************************************************/
+    unsigned long now = millis();
+    if(now - windowStartTime>WindowSize)
+    { //time to shift the Relay Window
+      windowStartTime += WindowSize;
+    }
+    if(Output > now - windowStartTime) {      
       switch_remote_pwr(ON);
-      on = true;
+      return true;
     }else{
       switch_remote_pwr(OFF);
+      return false;
     }
-       
-    out = out + "Temp_control=" + to_string_from_float(temp) + " Hold_temp=" + holdTemp + " ";
     
-    out += "Accepted_change=" + to_string_from_float(acceptedChange) + " ";
-
-    out += "Temp_change=";
-    out += to_string_from_float(tempChange) + " ";
-
-    return on;
 }
 
 void print_power_state(){
