@@ -1,2 +1,3 @@
 #!/bin/bash
-ssh -L 80:localhost:8000 einbox.net
+sudo ssh -L 80:localhost:8000 leafwiz@einbox.net -N&
+google-chrome http://localhost/
