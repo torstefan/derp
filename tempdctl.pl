@@ -26,17 +26,18 @@ my $t_file = 'running';
 if(defined $ARGV[0]){
 	my $new_temp = $ARGV[0];
 	if($new_temp =~/^\d+$/){
+		my $t_path = $t_dir.$t_file;
 		
-		if ( !-e $t_dir.$t_file ) {
-			if ( !-e $t_dir ) {
-				`mkdir $t_dir`;;	
-			}
-			`touch $t_dir$t_file`;
+		while ( !-e $t_dir ) {
+				if ( !-e $t_dir ) {
+					`mkdir $t_dir`;;	
+				}
+			print "Creating $t_dir \nr";
+			sleep 1;
 		}
-
-		`echo -n $new_temp > $t_dir$t_file`;
-		print "New set temp is: ".`cat $t_dir$t_file`."*c\n";
 		
+		`echo -n $new_temp > $t_path`;
+		print "New set temp is: ".`cat $t_path`."*c\n";
 	}else{
 		help();
 	}

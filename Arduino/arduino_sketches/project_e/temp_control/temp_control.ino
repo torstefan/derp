@@ -265,8 +265,8 @@ boolean do_temp_control(float temp, int holdTemp){
     Input = (double)get_temp();
     Setpoint = (double) holdTemp;
     myPID.Compute();
-    // Make the output match the now - windowStartTime
-    Output *= 100;
+
+    // Output is a global variable from the myPID object.
     out += "PID_output=" + (String)Output + " ";
     
     
