@@ -47,5 +47,5 @@ if(defined $ARGV[0]){
 }
 
 sub help{
-	print "Usage: .$0 temp_in_c \n";
+	print "Usage: $0 temp_in_c \n";
 }
