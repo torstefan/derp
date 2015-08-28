@@ -104,7 +104,7 @@
         
         my $ident = "Project_c";    
         
-        setlogsock({ type => "udp", host => "localhost", port => "1234"});
+        setlogsock({ type => "udp", host => "einbox.net", port => "1234"});
         openlog($ident, $logopt, $facility);    # don't forget this
         syslog($priority, $output);        
         closelog();

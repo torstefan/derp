@@ -21,51 +21,31 @@
 use strict;
 use warnings;
 use utf8;
-use Getopt::Long;
-use File::Slurp;
+my $t_dir = '/tmp/derp/';
+my $t_file = 'running';
+if(defined $ARGV[0]){
+	my $new_temp = $ARGV[0];
+	if($new_temp =~/^\d+$/){
+		
+		if ( !-e $t_dir.$t_file ) {
+			if ( !-e $t_dir ) {
+				`mkdir $t_dir`;;	
+			}
+			`touch $t_dir$t_file`;
+		}
 
-my $holdTemp; # Tells the arduno which temperature to reach.
-my $pwr_switch_pause_addition; # The pause time between switching the remote power on off.
-my $acceptedChange;  # Change in temp need to be under this variable in order to switch the remote power on off
+		`echo -n $new_temp > $t_dir$t_file`;
+		print "New set temp is: ".`cat $t_dir$t_file`."*c\n";
+		
+	}else{
+		help();
+	}
 
 
-GetOptions ("ht|holdTemp=i" => \$holdTemp,    # numeric
-"psp=i" => \$pwr_switch_pause_addition,
-"ac|acceptedChange=f" => \$acceptedChange,
-"h|help"=> \&help_msg
-) or die "Hmm.. $!";
-
-my $output = "";
-
-if (! -d "/tmp/derp/"){
- `mkdir /tmp/derp`;
-}
-
-if (defined($holdTemp) | defined($pwr_switch_pause_addition) | defined($acceptedChange) ){
-	print "holdTemp: $holdTemp, output: $output\n";
-	defined $holdTemp ? $output .= $holdTemp." " : $output .= "0 ";
-	print "holdTemp: $holdTemp, output: $output\n";
-	defined $pwr_switch_pause_addition ? $output .= $pwr_switch_pause_addition." " : $output .= "0 ";
-	defined $acceptedChange ? $output .= $acceptedChange." " : $output .= "0.0";
-	$output .= "\n";
-	write_file("/tmp/derp/running", $output) or die "$!";
-	print "Wrote $output to /tmp/derp/running\n";
 }else{
-	help_msg();
+	help();
 }
 
-
-
-
-
-
-sub help_msg {
-print 
-'-ht|--holdTemp 		- Tells the arduno which temperature to reach.
---psp 					- The pause time between switching the remote power on off.
--ac|--acceptedChange 	- Change in temp need to be under this variable in order to switch the remote power on off
-';
-
+sub help{
+	print "Usage: .$0 temp_in_c \n";
 }
-
-
