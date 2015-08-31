@@ -252,9 +252,9 @@ void loop() {
   opState = (operatingState)potentiometer.getSector();
   
   Serial.print("OpState=" + opStateToText());  
-  Serial.print(" PowerState=" + powerStateToText());
-  Serial.println(" SP=" + (String)Setpoint +" Kp=" + (String)Kp + " ");
   
+  Serial.print(" SP=" + (String)Setpoint +" Kp=" + (String)Kp + " ");
+  Serial.println(" Ki=" + (String)Ki +" Kd=" + (String)Kd + " ");
   
   write_display(opStateToText(), NONE);
   delay(500);
@@ -284,6 +284,9 @@ void loop() {
   Serial.println();
   
 }
+// ************************************************
+// Off State
+// ************************************************
 
 void Off()
 {
@@ -294,15 +297,20 @@ void Off()
    set_dimlevel(0x00);
    uint8_t buttons = 0;
    
-   while(opState == OFF)
+   while(OFF == (operatingState)potentiometer.getSector())
    {
-      opState = (operatingState)potentiometer.getSector();
-   }
+    }
+
+   
    // Prepare to transition to a possible RUN state
    t_sensors.requestTemperatures(); // Start an asynchronous temperature reading
 
    
 }
+
+// ************************************************
+// Run State
+// ************************************************
 
 void Run()
 {
@@ -365,9 +373,11 @@ void Run()
       // periodically log to serial port in csv format
       if (millis() - lastLogTime > logInterval)  
       {
-        Serial.print(Input);
-        Serial.print(",");
-        Serial.println(Output);
+        Serial.print(" PowerState=" + powerStateToText());
+        Serial.print(" Setpoint=" + (String)(Setpoint));
+        Serial.print(" pct="+ to_string_from_float(pct));
+        Serial.print(" Input=" + (String)Input);        
+        Serial.println(" Output="+ (String)Output);
       }
 
       delay(100);
