@@ -1,3 +1,10 @@
+
+/*************************************************** 
+Watchdog timer
+ ****************************************************/
+
+#include <avr/wdt.h>
+
 /*************************************************** 
 Adafruit Sensor 
  ****************************************************/
@@ -62,6 +69,8 @@ uint32_t g_ip;
 
 void setup(void)
 {
+  wdt_disable();
+  
   Serial.begin(115200);
   Serial.println(F("Init"));
 
@@ -87,12 +96,17 @@ void setup(void)
 
   g_ip = getIpOfWebsite();
   
+  wdt_enable(WDTO_8S);
+  
 }
 
 
 void loop(void)
 {
     if(cc3000.checkConnected()){
+      
+      
+      
       String sensors;
       sensors += g_webpage;
       sensors += F("Temp_c=");
@@ -106,15 +120,18 @@ void loop(void)
   
       //Serial.print("F: "); Serial.println(getFreeRam(), DEC);
       connectToWebsite(&g_ip, &sensors);
-    }else{
-      Serial.println(F("NC,RC!"));
-      connectToWifi();
-      getDHCP();
-      g_ip = getIpOfWebsite();
-      }
+      wdt_reset();
+      
+      delay(4000);
+      wdt_reset();
+      delay(4000);
+      wdt_reset();
+      delay(4000);
+      wdt_reset();
+    }
 
 
-    delay(15000);
+    
 
 
  
