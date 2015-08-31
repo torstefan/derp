@@ -577,17 +577,18 @@ void DriveOutput()
     
     if(lastPowerState != powerStateNow)
     {
+      
       remote_power_on();
-      lastPowerState == R_ON;
+      lastPowerState = R_ON;
     }
      
   }
   else
   {
     powerStateNow = R_OFF;
-    if(lastPowerState != powerStateNow){
+    if(lastPowerState != powerStateNow){      
       remote_power_off();
-      lastPowerState == R_OFF;
+      lastPowerState = R_OFF;
     }
 
   }
@@ -660,6 +661,7 @@ void remote_power_off()
     delay(100);
     digitalWrite(REMOTE_PWR_OFF, LOW);
     lastPowerState = R_OFF;
+    digitalWrite(STATUS_LED, LOW);
     timeSincePwrSwitch = millis();
     write_display((String)"OFF-", NONE);
     delay(800);
@@ -672,6 +674,8 @@ void remote_power_on()
     delay(100);
     digitalWrite(REMOTE_PWR_ON, LOW);
     lastPowerState = R_ON;
+    digitalWrite(STATUS_LED, HIGH);
+    
     timeSincePwrSwitch = millis();
     write_display((String)"ON--", NONE);
     delay(800);
