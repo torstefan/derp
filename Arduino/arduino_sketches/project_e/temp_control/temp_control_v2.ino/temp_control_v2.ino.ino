@@ -570,7 +570,9 @@ void DriveOutput()
   { //time to shift the Relay Window
      windowStartTime += WindowSize;
   }
-  if((onTime > 2000) && (onTime > (now - windowStartTime)))
+  
+  // As not to get rapid on /off of the heater the onTime value has to be above 2000ms, or under 9000ms.
+  if((onTime > 2000 && onTime < 9000 ) && (onTime > (now - windowStartTime)))
   {
     
     powerStateNow = R_ON;
@@ -578,6 +580,7 @@ void DriveOutput()
     if(lastPowerState != powerStateNow)
     {
       
+      remote_power_on();
       remote_power_on();
       lastPowerState = R_ON;
     }
@@ -587,6 +590,7 @@ void DriveOutput()
   {
     powerStateNow = R_OFF;
     if(lastPowerState != powerStateNow){      
+      remote_power_off();
       remote_power_off();
       lastPowerState = R_OFF;
     }

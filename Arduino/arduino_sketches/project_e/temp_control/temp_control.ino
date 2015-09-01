@@ -75,7 +75,7 @@ String out;
 double Setpoint, Input, Output;
 
 //Specify the links and initial tuning parameters
-PID myPID(&Input, &Output, &Setpoint,2,5,1, DIRECT);
+PID myPID(&Input, &Output, &Setpoint,30,3,5, DIRECT);
 
 int WindowSize = 5000;
 unsigned long windowStartTime;
