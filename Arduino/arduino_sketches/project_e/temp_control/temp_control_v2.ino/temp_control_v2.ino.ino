@@ -207,7 +207,7 @@ void setup() {
   myPID.SetTunings(Kp,Ki,Kd);
 
   myPID.SetSampleTime(1000);
-  myPID.SetOutputLimits(0, WindowSize);
+  myPID.SetOutputLimits(999, (WindowSize-999));
 
 
   // Run timer2 interrupt every 15 ms 
