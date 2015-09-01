@@ -1,9 +1,9 @@
 //-------------------------------------------------------------------
 //
 // Sous Vide Controller
-// Tor Stefan Lura - for Derp Engineering R&D Dep.
+// Modifications by Tor Stefan Lura - for Derp Engineering R&D Dep.
 //
-// Based on sketch of Bill Earl - for Adafruit Industries
+// All of the heavy lifting done by Bill Earl - for Adafruit Industries
 // And the Arduino PID and PID AutoTune Libraries 
 // by Brett Beauregard
 //------------------------------------------------------------------
