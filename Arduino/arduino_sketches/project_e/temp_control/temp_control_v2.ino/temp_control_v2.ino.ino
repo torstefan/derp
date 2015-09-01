@@ -92,7 +92,7 @@ unsigned long windowStartTime;
 // ************************************************
 byte ATuneModeRemember=2;
 
-double aTuneStep=500;
+double aTuneStep=1000;
 double aTuneNoise=1;
 unsigned int aTuneLookBack=20;
 
@@ -572,7 +572,7 @@ void DriveOutput()
   }
   
   // As not to get rapid on /off of the heater the onTime value has to be above 2000ms, or under 9000ms.
-  if((onTime > 2000 && onTime < 9000 ) && (onTime > (now - windowStartTime)))
+  if((onTime >= 1000 && onTime <= 9000 ) && (onTime > (now - windowStartTime)))
   {
     
     powerStateNow = R_ON;
