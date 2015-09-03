@@ -112,8 +112,8 @@ operatingState opState = OFF;
 // ************************************************
 
 SoftwareSerial s7s(DISPLAY_RX_PIN, DISPLAY_TX_PIN);
-enum { COMMA=5, COMMA_10=6, COLON, NONE };
-const int logInterval = 10000; // log every 10 seconds
+enum { COMMA=5, COMMA_10=6, COLON, COMMA_APRO, NONE };
+const int logInterval = 1000; // log every 10 seconds
 long lastLogTime = 0;
 
 // ************************************************
@@ -135,7 +135,8 @@ long timeSincePwrSwitch;
 enum powerState { R_ON=10, R_OFF=11 };
 powerState lastPowerState;
 powerState powerStateNow;
-
+int watchCatTimer = 0;
+boolean apro = false; // Variable to blink aprostrof to show pid active
 
 // ************************************************
 // Physical input
@@ -207,7 +208,7 @@ void setup() {
   myPID.SetTunings(Kp,Ki,Kd);
 
   myPID.SetSampleTime(1000);
-  myPID.SetOutputLimits(999, (WindowSize-999));
+  myPID.SetOutputLimits(999, (WindowSize));
 
 
   // Run timer2 interrupt every 15 ms 
@@ -251,10 +252,8 @@ void loop() {
 
   opState = (operatingState)potentiometer.getSector();
   
-  Serial.print("OpState=" + opStateToText());  
+  Serial.println("OpState=" + opStateToText());  
   
-  Serial.print(" SP=" + (String)Setpoint +" Kp=" + (String)Kp + " ");
-  Serial.println(" Ki=" + (String)Ki +" Kd=" + (String)Kd + " ");
   
   write_display(opStateToText(), NONE);
   delay(500);
@@ -294,11 +293,31 @@ void Off()
    myPID.SetMode(MANUAL);
    
    remote_power_off();  // make sure it is off
-   set_dimlevel(0x00);
-   uint8_t buttons = 0;
+   //set_dimlevel((byte) 50);
+   delay(2000);
+
+  
+   boolean dimmed = false;
    
    while(OFF == (operatingState)potentiometer.getSector())
    {
+    Input = t_sensors.getTempC(tempSensor);
+    t_sensors.requestTemperatures();
+    write_display((String)Input, COMMA);
+    
+    if (millis() - lastLogTime > logInterval)  
+      {
+      Serial.println("Input=" + (String)Input);
+      lastLogTime = millis();
+      }
+    
+    if(l_button.isPressed()) {
+      dimmed = !dimmed;  
+      }
+      
+    dimmed ? set_dimlevel((byte) 0 ) : set_dimlevel((byte) 255 ) ;
+    
+    
     }
 
    
@@ -329,7 +348,7 @@ void Run()
    SaveParameters();
    myPID.SetTunings(Kp,Ki,Kd);
 
-   uint8_t buttons = 0;
+   
    while(RUN == (operatingState)potentiometer.getSector())
    {
             
@@ -348,14 +367,17 @@ void Run()
       }     
       
       DoControl();
+      
 
-      write_display(String(Input), COMMA);
+      // Blink the apostrof to show we are in PID on mode.      
+      apro = !apro;
+      apro ? write_display(String(Input), COMMA_APRO) : write_display(String(Input), COMMA);
       
       float pct = map(Output, 0, WindowSize, 0, 1000);
 
      if (l_button.isPressed()){
-        write_display(to_string_from_float(pct/10),COMMA);
-        set_decimals(0b00100010);
+        write_display(to_string_from_float(pct == 99.00 ? 0 : (pct/100)),COMMA);
+        set_decimals(0b00000010);
         delay(1000);
       }
       
@@ -375,9 +397,14 @@ void Run()
       {
         Serial.print(" PowerState=" + powerStateToText());
         Serial.print(" Setpoint=" + (String)(Setpoint));
-        Serial.print(" pct="+ to_string_from_float(pct));
-        Serial.print(" Input=" + (String)Input);        
-        Serial.println(" Output="+ (String)Output);
+        Serial.print(" Kp=" + (String)Kp + " Ki=" + (String)Ki +" Kd=" + (String)Kd + " ");
+        Serial.print(" pct="+ to_string_from_float(pct == 99.00 ? 0 : (pct/100)));
+        Serial.println(" Temp_0=" + (String)Input);        
+        
+        
+        //Serial.print(" Output="+ (String)Output);
+        //Serial.println(" WC="+ (String)watchCatTimer);
+        lastLogTime = millis();
       }
 
       delay(100);
@@ -551,7 +578,8 @@ void DoControl()
   }
   else // Execute control algorithm
   {
-     myPID.Compute();
+     
+      myPID.Compute();
   }
   
   // Time Proportional relay state is updated regularly via timer interrupt.
@@ -572,30 +600,35 @@ void DriveOutput()
   }
   
   // As not to get rapid on /off of the heater the onTime value has to be above 2000ms, or under 9000ms.
-  if((onTime >= 1000 && onTime <= 9000 ) && (onTime > (now - windowStartTime)))
+  if((onTime >= 1000) && (onTime > (now - windowStartTime)))
   {
     
     powerStateNow = R_ON;
-    
-    if(lastPowerState != powerStateNow)
+    // WatchCatTimer makes sure we continusly send on signals on the remote control.
+    // But not all time time since the functions takes 800 ms
+    if(lastPowerState != powerStateNow | watchCatTimer > (WindowSize / 5))
     {
       
       remote_power_on();
       remote_power_on();
       lastPowerState = R_ON;
+      watchCatTimer = 0;
     }
      
   }
   else
   {
     powerStateNow = R_OFF;
-    if(lastPowerState != powerStateNow){      
+    if(lastPowerState != powerStateNow | watchCatTimer > (WindowSize / 5)){      
       remote_power_off();
       remote_power_off();
       lastPowerState = R_OFF;
+      watchCatTimer = -100; // Debug. To see the difference between on and off in output
     }
 
   }
+
+  watchCatTimer++;
 }
 
 
@@ -725,15 +758,18 @@ void write_display(String text, int punct_mark )
 
   switch(punct_mark)
   {
+
+    case COMMA_APRO:
+      set_decimals(0b00100100);   // 000.0` 
+      break;
     case COLON:
-      set_decimals(0b00010000);  // Sets digit 3 decimal on     
-     
+      set_decimals(0b00010000);  // 00:00
       break;
     case COMMA:
-      set_decimals(0b00000100);  // Sets digit 3 decimal on
+      set_decimals(0b00000100);  // 000.0
       break;
     case COMMA_10:
-      set_decimals(0b00000010);  // Sets digit 3 decimal on
+      set_decimals(0b00000010);  // 00.00
       break;     
       
     default:
@@ -763,8 +799,8 @@ void set_decimals(byte decimals)
 
 void set_dimlevel(byte level)
 {
-  Serial.write(0x7A);  // Brightness control command
-  Serial.write(level);  // 0 - 255
+  s7s.write(0x7A);  // Brightness control command
+  s7s.write(level);  // 0 - 255
 }
 
 String opStateToText(){
