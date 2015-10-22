@@ -307,7 +307,7 @@ void Off()
     
     if (millis() - lastLogTime > logInterval)  
       {
-      Serial.println("Input=" + (String)Input);
+      Serial.println("Temp_0=" + (String)Input);
       lastLogTime = millis();
       }
     
