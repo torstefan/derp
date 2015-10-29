@@ -95,7 +95,7 @@ void loop() {
     // Winter time, 1 hour ahead.
     adjustTime(60*60);
     }
-    
+    delay(1000);
     // make a string for assembling the data to log:
     String dataString = "";
     
@@ -138,7 +138,7 @@ void loop() {
       Serial.println("error opening datalog.txt");
     }
     delay(1000);
-    int m = 1;
+    int m = 15;
     for(int i=0; i<m; i++){
       LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);  
     }
