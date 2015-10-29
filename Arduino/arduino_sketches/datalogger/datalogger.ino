@@ -56,7 +56,7 @@ const int chipSelect = 4;
 
 void setup() {
   Serial.begin(9600);
-  Serial.println(F("BME280 test"));
+  Serial.println(F("Datalogging: BME280"));
 
   if (!bme.begin()) {
     Serial.println(F("Could not find a valid BME280 sensor, check wiring!"));
@@ -76,7 +76,7 @@ void setup() {
 
   // On Linux, you can use "date +T%s\n > /dev/ttyACM0" (UTC time zone)
   setSyncProvider( requestSync);  //set function to call when sync required
-  Serial.println("Waiting for sync message");
+  Serial.println(F("Waiting for sync message, do date +T%s\n"));
 }
 
 void loop() {
@@ -108,19 +108,19 @@ void loop() {
     dataString += monthShortStr(month()); dataString += " ";
     dataString += year(); dataString += " ";
     
-    dataString += F("Temperature = ");
+    dataString += F("Temp=");
     dataString += bme.readTemperature();
-    dataString +=" *C ";
+    dataString +=" *C";
 
-    dataString += F(" Approx. Altitude = ");
+    dataString += F(" ApproxAlt=");
     dataString += bme.readAltitude(SEALEVELPRESSURE_HPA);
     dataString += F(" m");
 
-    dataString += F(" Humidity = ");
+    dataString += F(" Hum=");
     dataString += bme.readHumidity();
     dataString += F(" %");
 
-    dataString += F(" Pressure = ");
+    dataString += F(" Pres=");
     dataString += (bme.readPressure() / 100.0F);
     dataString += " hPa";
 
@@ -135,7 +135,7 @@ void loop() {
     }
     // if the file isn't open, pop up an error:
     else {
-      Serial.println("error opening datalog.txt");
+      Serial.println(F("error opening datalog.txt"));
     }
     delay(1000);
     int m = 15;
