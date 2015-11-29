@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+@page {
+  size: A5;
+}
+	h2{
+		font-size:1em;
+	}
+	div#otl {
+		position:absolute;
+			top: 5px;
+			left: 10px;
+		width: 300px;
+		height: 500px;
+		border: 3px solid #000000;
+	}
+	div#otr {
+		position:absolute;
+			top: 5px;
+			left: 320px;
+		width: 300px;
+		height: 500px;
+		border: 3px solid #000000;
+	}
+	div#obl {
+		position:absolute;
+			top: 515px;
+			left: 10px;
+		width: 300px;
+		height: 500px;
+		border: 3px solid #000000;
+	}
+	div#obr {
+		position:absolute;
+			top: 515px;
+			left: 320px;
+		width: 300px;
+		height: 500px;
+		border: 3px solid #000000;
+	}
+	img#derp {
+		padding-top: 20px;
+		width: 100px;
+		height: 100px;
+	}
+	div#bdate{
+		padding-top: 10px;
+	}
+	div#abv{
+		padding-bottom: 20px;
+		font-size:1em;
+	}
+	div#ing{
+		padding-left: 5px;
+		padding-right: 5px;
+		padding-bottom: 5px;
+		font-size:0.08em;
+	}
+	div#brew{
+		padding-left: 5px;
+		padding-right: 5px;
+		font-size:0.2em;
+	}	
+</style>
+</head>
+<body>
+<div id="otl">
+	<center><h1>$NAME</h1></center>
+	<center><h2>DERP Brewery</h2></center>
+	<center><img id="derp" src="derp.png"></center>
+
+	<div id="bdate"><center>$BOTTLING_DATE</center></div>
+	<div id="abv"><center>$ABV</center></div>
+	<div id="ing"><small>$INGREDIENTS</small><br/>OG $DISPLAY_OG - FG $DISPLAY_FG - Primary $DISPLAY_PRIMARY_TEMP*c - Age $DISPLAY_AGE_TEMP*c - $IBU - Vol $DISPLAY_BATCH_SIZE<br/> Brewed $DATE - Bottled $BOTTLING_DATE</div>
+	<div id="brew">Brewed by $BREWER</div>
+</div>
+
+<div id="otr">
+	<center><h1>$NAME</h1></center>
+	<center><h2>DERP Brewery</h2></center>
+	<center><img id="derp" src="derp.png"></center>
+
+	<div id="bdate"><center>$BOTTLING_DATE</center></div>
+	<div id="abv"><center>$ABV</center></div>
+	<div id="ing"><small>$INGREDIENTS</small><br/>OG $DISPLAY_OG - FG $DISPLAY_FG - Primary $DISPLAY_PRIMARY_TEMP*c - Age $DISPLAY_AGE_TEMP*c - $IBU - Vol $DISPLAY_BATCH_SIZE<br/> Brewed $DATE - Bottled $BOTTLING_DATE</div>
+	<div id="brew">Brewed by $BREWER</div>
+</div>
+
+<div id="obl">
+	<center><h1>$NAME</h1></center>
+	<center><h2>DERP Brewery</h2></center>
+	<center><img id="derp" src="derp.png"></center>
+
+	<div id="bdate"><center>$BOTTLING_DATE</center></div>
+	<div id="abv"><center>$ABV</center></div>
+	<div id="ing"><small>$INGREDIENTS</small><br/>OG $DISPLAY_OG - FG $DISPLAY_FG - Primary $DISPLAY_PRIMARY_TEMP*c - Age $DISPLAY_AGE_TEMP*c - $IBU - Vol $DISPLAY_BATCH_SIZE<br/> Brewed $DATE - Bottled $BOTTLING_DATE</div>
+	<div id="brew">Brewed by $BREWER</div>
+</div>
+
+<div id="obr">
+	<center><h1>$NAME</h1></center>
+	<center><h2>DERP Brewery</h2></center>
+	<center><img id="derp" src="derp.png"></center>
+
+	<div id="bdate"><center>$BOTTLING_DATE</center></div>
+	<div id="abv"><center>$ABV</center></div>
+	<div id="ing"><small>$INGREDIENTS</small><br/>OG $DISPLAY_OG - FG $DISPLAY_FG - Primary $DISPLAY_PRIMARY_TEMP*c - Age $DISPLAY_AGE_TEMP*c - $IBU - Vol $DISPLAY_BATCH_SIZE<br/> Brewed $DATE - Bottled $BOTTLING_DATE</div>
+	<div id="brew">Brewed by $BREWER</div>
+</div>
+</body>
+</html>
+
+
